@@ -1,0 +1,59 @@
+- name: put a stolon-sentinel.yaml file
+  template: src=stolon-sentinel.yaml dest=/root/stolon-sentinel.yaml
+
+- name: check if Stolon sentinels exist
+  shell: kubectl get replicationcontrollers --namespace={{ stolon_cluster_namespace }} | grep stolon-sentinel
+  register: result
+  ignore_errors: true
+
+- name: deploy Stolon sentinels
+  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/stolon-sentinel.yaml
+  when: result|failed
+
+- name: put a secret.yaml file
+  template: src=secret.yaml dest=/root/secret.yaml
+
+- name: check if a secret exists
+  shell: kubectl get secrets --namespace={{ stolon_cluster_namespace }} | grep stolon
+  register: result
+  ignore_errors: true
+
+- name: create a secret
+  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/secret.yaml
+  when: result|failed
+
+- name: put a stolon-keeper.yaml file
+  template: src=stolon-keeper.yaml dest=/root/stolon-keeper.yaml
+
+- name: check if Stolon keepers exist
+  shell: kubectl get statefulsets --namespace={{ stolon_cluster_namespace }} | grep stolon-keeper
+  register: result
+  ignore_errors: true
+
+- name: deploy Stolon keepers
+  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/stolon-keeper.yaml
+  when: result|failed
+
+- name: put a stolon-proxy.yaml file
+  template: src=stolon-proxy.yaml dest=/root/stolon-proxy.yaml
+
+- name: check if Stolon proxies exist
+  shell: kubectl get replicationcontrollers --namespace={{ stolon_cluster_namespace }} | grep stolon-proxy
+  register: result
+  ignore_errors: true
+
+- name: deploy Stolon proxies
+  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/stolon-proxy.yaml
+  when: result|failed
+
+- name: put a stolon-proxy-service.yaml file
+  template: src=stolon-proxy-service.yaml dest=/root/stolon-proxy-service.yaml
+
+- name: check if Stolon proxy service exists
+  shell: kubectl get services --namespace={{ stolon_cluster_namespace }} | grep stolon-proxy-service
+  register: result
+  ignore_errors: true
+
+- name: deploy Stolon proxy service
+  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/stolon-proxy-service.yaml
+  when: result|failed
