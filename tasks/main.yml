@@ -1,3 +1,30 @@
+- name: put stolon_initial_clusterfile
+  template: src=stolon_initial_clusterfile dest=/root/stolon_initial_clusterfile
+
+- name: check if Stolon configuration exists
+  shell: kubectl get configmaps --namespace={{ stolon_cluster_namespace }} | grep stolon
+  register: result
+  ignore_errors: true
+
+- name: create a configmap from the initial clusterfile
+  shell: kubectl create configmap stolon --from-file=/root/stolon_initial_clusterfile --namespace={{ stolon_cluster_namespace }}
+  when: result|failed
+
+- name: create /home/pvs
+  file: dest=/home/pvs state=directory owner=root mode=0600
+
+- name: put a pv.yaml file
+  template: src=pv.yaml dest=/root/pv.yaml
+
+#- name: check if Stolon sentinels exist
+#  shell: kubectl get replicationcontrollers --namespace={{ stolon_cluster_namespace }} | grep stolon-sentinel
+#  register: result
+#  ignore_errors: true
+
+- name: deploy a persistent volume
+  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/pv.yaml
+#  when: result|failed
+
 - name: put a stolon-sentinel.yaml file
   template: src=stolon-sentinel.yaml dest=/root/stolon-sentinel.yaml
 

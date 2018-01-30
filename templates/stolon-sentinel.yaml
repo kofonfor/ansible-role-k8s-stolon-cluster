@@ -20,7 +20,10 @@ spec:
           - "/bin/bash"
           - "-ec"
           - |
-            exec gosu stolon stolon-sentinel
+            exec gosu stolon stolon-sentinel --initial-cluster-spec /etc/config/stolon_initial_clusterfile
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/config
         env:
           - name: STSENTINEL_CLUSTER_NAME
             value: "kube-stolon"
@@ -31,3 +34,7 @@ spec:
           # Uncomment this to enable debug logs
           - name: STSENTINEL_DEBUG
             value: "true"
+      volumes:
+      - name: config-volume
+        configMap:
+          name: stolon
