@@ -1,0 +1,10 @@
+apiVersion: v1
+description: Stolon Helm chart for Kubernetes
+name: stolon
+version: 0.0.1
+home: https://github.com/sorintlab/stolon
+sources:
+- https://github.com/sorintlab/stolon
+maintainers:
+- name: alexclear
+  email: alexclear@gmail.com

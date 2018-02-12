@@ -1,86 +1,38 @@
-- name: put stolon_initial_clusterfile
-  template: src=stolon_initial_clusterfile dest=/root/stolon_initial_clusterfile
-
-- name: check if Stolon configuration exists
-  shell: kubectl get configmaps --namespace={{ stolon_cluster_namespace }} | grep stolon
-  register: result
-  ignore_errors: true
-
-- name: create a configmap from the initial clusterfile
-  shell: kubectl create configmap stolon --from-file=/root/stolon_initial_clusterfile --namespace={{ stolon_cluster_namespace }}
-  when: result|failed
-
 - name: create /home/pvs
   file: dest=/home/pvs state=directory owner=root mode=0600
 
-- name: put a pv.yaml file
-  template: src=pv.yaml dest=/root/pv.yaml
+- name: put a pv1.yaml file
+  template: src=pv1.yaml dest=/root/pv1.yaml
 
-#- name: check if Stolon sentinels exist
-#  shell: kubectl get replicationcontrollers --namespace={{ stolon_cluster_namespace }} | grep stolon-sentinel
-#  register: result
-#  ignore_errors: true
+- name: check if a PV exist
+  shell: kubectl get persistentvolumes --namespace={{ stolon_cluster_namespace }} | grep data-1
+  register: result
+  ignore_errors: true
 
 - name: deploy a persistent volume
-  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/pv.yaml
-#  when: result|failed
-
-- name: put a stolon-sentinel.yaml file
-  template: src=stolon-sentinel.yaml dest=/root/stolon-sentinel.yaml
-
-- name: check if Stolon sentinels exist
-  shell: kubectl get replicationcontrollers --namespace={{ stolon_cluster_namespace }} | grep stolon-sentinel
-  register: result
-  ignore_errors: true
-
-- name: deploy Stolon sentinels
-  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/stolon-sentinel.yaml
+  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/pv1.yaml
   when: result|failed
 
-- name: put a secret.yaml file
-  template: src=secret.yaml dest=/root/secret.yaml
+- name: put a pv2.yaml file
+  template: src=pv2.yaml dest=/root/pv2.yaml
 
-- name: check if a secret exists
-  shell: kubectl get secrets --namespace={{ stolon_cluster_namespace }} | grep stolon
+- name: check if a PV exist
+  shell: kubectl get persistentvolumes --namespace={{ stolon_cluster_namespace }} | grep data-2
   register: result
   ignore_errors: true
 
-- name: create a secret
-  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/secret.yaml
+- name: deploy a persistent volume
+  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/pv2.yaml
   when: result|failed
 
-- name: put a stolon-keeper.yaml file
-  template: src=stolon-keeper.yaml dest=/root/stolon-keeper.yaml
-
-- name: check if Stolon keepers exist
-  shell: kubectl get statefulsets --namespace={{ stolon_cluster_namespace }} | grep stolon-keeper
+- name: check if a Helm release for stolon-release is present
+  shell: helm list --namespace={{ etcd_operator_namespace }} | grep stolon-release
   register: result
   ignore_errors: true
 
-- name: deploy Stolon keepers
-  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/stolon-keeper.yaml
-  when: result|failed
+- name: put the chart
+  copy: src=stolon dest=/root/
 
-- name: put a stolon-proxy.yaml file
-  template: src=stolon-proxy.yaml dest=/root/stolon-proxy.yaml
-
-- name: check if Stolon proxies exist
-  shell: kubectl get replicationcontrollers --namespace={{ stolon_cluster_namespace }} | grep stolon-proxy
-  register: result
-  ignore_errors: true
-
-- name: deploy Stolon proxies
-  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/stolon-proxy.yaml
-  when: result|failed
-
-- name: put a stolon-proxy-service.yaml file
-  template: src=stolon-proxy-service.yaml dest=/root/stolon-proxy-service.yaml
-
-- name: check if Stolon proxy service exists
-  shell: kubectl get services --namespace={{ stolon_cluster_namespace }} | grep stolon-proxy-service
-  register: result
-  ignore_errors: true
-
-- name: deploy Stolon proxy service
-  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/stolon-proxy-service.yaml
+- name: install stolon-release using a Helm chart
+  shell: cd /root && helm install stolon --namespace {{ etcd_operator_namespace }} --name stolon-release
   when: result|failed
