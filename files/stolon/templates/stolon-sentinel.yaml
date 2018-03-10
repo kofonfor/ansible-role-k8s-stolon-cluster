@@ -28,9 +28,9 @@ spec:
           - name: STSENTINEL_CLUSTER_NAME
             value: "{{ .Release.Name }}-kube-stolon"
           - name: STSENTINEL_STORE_BACKEND
-            value: "etcdv3" # Or: etcdv2, consul
+            value: "{{ .Values.store.backend }}"
           - name: STSENTINEL_STORE_ENDPOINTS
-            value: "http://genesys-stolon-etcd-client:2379"
+            value: "{{ .Values.store.endpoints }}"
           # Uncomment this to enable debug logs
           - name: STSENTINEL_DEBUG
             value: "true"
