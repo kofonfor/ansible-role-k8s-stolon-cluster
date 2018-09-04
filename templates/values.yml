@@ -4,3 +4,12 @@ persistence:
   size: 4Gi
 superuserPassword: "{{ stolon_superuser_password }}"
 replicationPassword: "{{ stolon_replication_password }}"
+proxy:
+  service:
+    type: NodePort
+    ports:
+      proxy:
+        port: 5432
+        targetPort: 5432
+        nodePort: {{ stolon_proxy_nodeport }}
+        protocol: TCP
