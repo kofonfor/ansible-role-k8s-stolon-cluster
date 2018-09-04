@@ -1,7 +1,0 @@
-password: daipheNg5othiwel1uti
-store:
-  backend: consul
-  endpoints: "http://consul-cluster-release-consul:8500"
-service:
-  type: NodePort
-  nodePort: 32345

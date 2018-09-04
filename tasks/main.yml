@@ -1,38 +1,5 @@
-- name: create /home/pvs
-  file: dest=/home/pvs state=directory owner=root mode=0600
+- name: put values
+  template: src=values.yml dest=/tmp/stolon-{{ stolon_helm_release }}.yml
 
-- name: put a pv1.yaml file
-  template: src=pv1.yaml dest=/root/pv1.yaml
-
-- name: check if a PV exist
-  shell: kubectl get persistentvolumes --namespace={{ stolon_cluster_namespace }} | grep stolon-keeper-data-1
-  register: result
-  ignore_errors: true
-
-- name: deploy a persistent volume
-  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/pv1.yaml
-  when: result|failed
-
-- name: put a pv2.yaml file
-  template: src=pv2.yaml dest=/root/pv2.yaml
-
-- name: check if a PV exist
-  shell: kubectl get persistentvolumes --namespace={{ stolon_cluster_namespace }} | grep stolon-keeper-data-2
-  register: result
-  ignore_errors: true
-
-- name: deploy a persistent volume
-  shell: kubectl create --namespace={{ stolon_cluster_namespace }} -f /root/pv2.yaml
-  when: result|failed
-
-- name: check if a Helm release for stolon-release is present
-  shell: helm list --namespace={{ etcd_operator_namespace }} | grep stolon-release
-  register: result
-  ignore_errors: true
-
-- name: put the chart
-  copy: src=stolon dest=/root/
-
-- name: install stolon-release using a Helm chart
-  shell: cd /root && helm install stolon --namespace {{ etcd_operator_namespace }} --name stolon-release
-  when: result|failed
+- name: upgrade {{ stolon_helm_release }} release using a Helm chart
+  shell: helm upgrade {{ stolon_helm_release }} stable/stolon --install --namespace {{ k8s_namespace }} -f /tmp/stolon-{{ stolon_helm_release }}.yml

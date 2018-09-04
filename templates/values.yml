@@ -1,0 +1,6 @@
+persistence:
+  enabled: true
+  storageClassName: "{{ storage_class_name }}"
+  size: 4Gi
+superuserPassword: "{{ stolon_superuser_password }}"
+replicationPassword: "{{ stolon_replication_password }}"
