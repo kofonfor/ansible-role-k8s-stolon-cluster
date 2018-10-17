@@ -6,10 +6,12 @@ superuserPassword: "{{ stolon_superuser_password }}"
 replicationPassword: "{{ stolon_replication_password }}"
 proxy:
   service:
-    type: NodePort
+    type: {{ stolon_service_type }}
     ports:
       proxy:
         port: 5432
         targetPort: 5432
+{% if stolon_service_type == "NodePort" %}
         nodePort: {{ stolon_proxy_nodeport }}
+{% endif %}
         protocol: TCP
